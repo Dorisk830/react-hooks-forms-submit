@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { v4 as uuid } from "uuid";
 
 function Form() {
   const [firstName, setFirstName] = useState("John");
   const [lastName, setLastName] = useState("Henry");
   const [submittedData, setSubmittedData] = useState([]);
-
+  const [errors, setErrors] = useState([]);
+  
   function handleFirstNameChange(event) {
     setFirstName(event.target.value);
   }
@@ -13,29 +15,36 @@ function Form() {
     setLastName(event.target.value);
   }
 
-  const [errors, setErrors] = useState([]);
-
   function handleSubmit(event) {
     event.preventDefault();
-    // first name is required
-    if (firstName.length > 0) {
-      const formData = { firstName: firstName, lastName: lastName };
-      const dataArray = [...submittedData, formData];
-      setSubmittedData(dataArray);
-      setFirstName("");
-      setLastName("");
-      setErrors([]);
-    } else {
+
+    // Validate form data
+    if (firstName.trim() === "") {
       setErrors(["First name is required!"]);
+      return;
     }
+
+    // Create a new item
+    const newItem = {
+      id: uuid(),
+      firstName: firstName,
+      lastName: lastName,
+    };
+
+    // Update state with the new item
+    setSubmittedData((prevData) => [...prevData, newItem]);
+
+    // Clear form fields and errors
+    setFirstName("");
+    setLastName("");
+    setErrors([]);
   }
-  const listOfSubmissions = submittedData.map((data, index) => {
-    return (
-      <div key={index}>
-        {data.firstName} {data.lastName}
-      </div>
-    );
-  });
+
+  const listOfSubmissions = submittedData.map((data) => (
+    <div key={data.id}>
+      {data.firstName} {data.lastName}
+    </div>
+  ));
 
   return (
     <div>
@@ -45,13 +54,12 @@ function Form() {
         <button type="submit">Submit</button>
       </form>
       {/* conditionally render error messages */}
-      {errors.length > 0
-        ? errors.map((error, index) => (
-            <p key={index} style={{ color: "red" }}>
-              {error}
-            </p>
-          ))
-        : null}
+      {errors.length > 0 &&
+        errors.map((error, index) => (
+          <p key={index} style={{ color: "red" }}>
+            {error}
+          </p>
+        ))}
       <h3>Submissions</h3>
       {listOfSubmissions}
     </div>
